@@ -8,6 +8,7 @@ phases:
     on-failure: ABORT
     commands:
       - sam build -t template.yaml
+      - sam deploy
 
 artifacts:
   files:
