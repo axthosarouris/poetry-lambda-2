@@ -1,0 +1,38 @@
+version: 0.2
+
+env:
+  shell: bash
+  variables:
+    ARTIFACTS_BUCKET:
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.9
+    commands:
+      - pip install cfn-lint
+      - pip install cfn-lint-serverless
+      - export POETRY_HOME=/opt/poetry
+      - python3 -m venv $POETRY_HOME
+      - $POETRY_HOME/bin/pip install poetry==1.2.0
+      - $POETRY_HOME/bin/poetry --version
+      - export PATH="$PATH:$POETRY_HOME/bin"
+      - echo $PATH
+      - poetry build
+      - poetry run pip install --upgrade -t package dist/*.whl
+      - (cd package && zip  -r ../artifact.zip . -x 'package/*.pyc')
+      - rm -rf package
+
+  pre_build:
+    on-failure: ABORT
+    commands:
+      - cfn-lint -t template.yaml -a cfn_lint_serverless.rules
+  build:
+    on-failure: ABORT
+    commands:
+      - poetry run sam build -t template.yaml
+      - sam package --s3-bucket $ARTIFACTS_BUCKET --output-template-file packaged.yaml  --s3-prefix poetry-lambda
+
+artifacts:
+  files:
+    - packaged.yaml

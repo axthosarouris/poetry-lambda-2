@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform:
+  - AWS::Serverless-2016-10-31
+  - AWS::LanguageExtensions
+
+Resources:
+
+  MyFunction:
+   Type: AWS::Serverless::Function
+   Properties:
+     Architectures:
+       - arm64
+     CodeUri: ./src
+     Description: My Lambda
+     Handler: new_user_handler.handle_request
+     MemorySize: 1024
+     PackageType: Zip
+     Role: !GetAtt MyFunctionRole.Arn
+     Runtime: python3.10
+     Timeout: 100
+
+  MyFunctionRole:
+   Type: AWS::IAM::Role
+   Properties:
+     AssumeRolePolicyDocument:
+       Version: "2012-10-17"
+       Statement:
+         - Effect: Allow
+           Principal:
+             Service:
+               - lambda.amazonaws.com
+           Action:
+             - 'sts:AssumeRole'
+     ManagedPolicyArns:
+       - !Ref DefaultLambdaPermissions
+     Path: /
+     RoleName: !Sub '${AWS::StackName}-MyFunctionRole'
+
+  DefaultLambdaPermissions:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub DefaultLambdaPermissions-${AWS::StackName}
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - cloudwatch:PutMetricData
+            Resource: "*"
