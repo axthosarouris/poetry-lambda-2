@@ -1,0 +1,19 @@
+version: 0.2
+
+env:
+  shell: bash
+  variables:
+    ARTIFACTS_BUCKET:
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.10
+  build:
+    on-failure: ABORT
+    commands:
+      - sam build -t template.yaml
+
+artifacts:
+  files:
+    - template.yaml
