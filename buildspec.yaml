@@ -1,10 +1,5 @@
 version: 0.2
 
-env:
-  shell: bash
-  variables:
-    ARTIFACTS_BUCKET:
-
 phases:
   install:
     runtime-versions:
